@@ -2,19 +2,20 @@
 	DigiForensics
  	USB tool for memory imaging orignally intended for the Digispark.
  	Developed by Caleb Coffie <CalebCoffie@gmail.com>
- 	Special thanks to the people at offensive Security and Digistump
+ 	Special thanks to the people at Offensive Security, Digistump, and PJRC.
  
  	For more information check out https://CalebCoffie.com
  */
 
 #include <usb_private.h>
 
-// Trigger Pin
+//Trigger Pin
 const int trigger_pin = 23;
 
-// Teensy has LED on 11
+//Teensy has LED on 11
 const int led_pin = 11;
 
+//Waits till device is ready. Allows you to gurantee you're not sending data before the computer is ready for it.
 void wait_for_drivers(unsigned int speed)
 {
 	bool numLockTrap = is_num_on();
@@ -30,12 +31,13 @@ void wait_for_drivers(unsigned int speed)
 	delay(speed);
 }
 
-// NUM, SCROLL, CAPS Led keys checking. We only use NUMLOCK in this sketch. 
+//NUM, SCROLL, CAPS Led keys checking. We only use NUMLOCK in this sketch. 
 int ledkeys(void)       {return int(keyboard_leds);}
 bool is_scroll_on(void) {return ((ledkeys() & 4) == 4) ? true : false;}
 bool is_caps_on(void)   {return ((ledkeys() & 2) == 2) ? true : false;}
 bool is_num_on(void)    {return ((ledkeys() & 1) == 1) ? true : false;}
 
+//Depresses all keys by sending nothing.
 void unpress_key(void)
 {
   Keyboard.set_modifier(0);
@@ -44,6 +46,7 @@ void unpress_key(void)
   delay(500);
 }
 
+//Blinks to provide visual feedback on the device
 void blink_fast(int blinkrate,int delaytime)
 {
   int blinkcounter=0;
@@ -57,7 +60,7 @@ void blink_fast(int blinkrate,int delaytime)
 }
 
 // A Teensy side check for a pressed numlock key. Will check for a pressed numlock key (reps) times, with (millisecs) milliseconds in between checks.
-// The "reps" and millisecs" variables are fed to this function from other functions that require timing. For example:
+// The "reps" and millisecs" variables are fed to this function from other functions that require timing.
 bool check_for_numlock_sucess_teensy(int reps, int millisecs)
 {
   unsigned int i = 0;
@@ -107,9 +110,23 @@ void press_numlock(void)
   delay(200);
 }
 
+//Check if numlock is on. If so turns it off.
 void make_sure_numlock_is_off(void)
 {
   if (is_num_on())
+  {
+    delay(500);
+    press_numlock();
+    delay(700);
+    unpress_key();
+    delay(700);
+  }
+}
+
+//Checks if numlock is off. If so turns it on.
+void make_sure_numlock_is_on(void)
+{
+  if (!is_num_on())
   {
     delay(500);
     press_numlock();
@@ -123,31 +140,12 @@ void make_sure_numlock_is_off(void)
 //requires that button be pressed for 3 seconds before triggering program
 bool trigger(void)
 {
-  Keyboard.print("trigger sequence entered");
-  Keyboard.set_key1(KEY_ENTER);
-  Keyboard.send_now();
-  Keyboard.set_key1(0);
-  Keyboard.send_now();
   int num_of_presses = 0;
-  for (int x; x<3; x++)
+  for (int x=0; x<3; x++)
   {
-     Keyboard.print(!digitalRead(trigger_pin));
-     Keyboard.set_key1(KEY_ENTER);
-     Keyboard.send_now();
-     Keyboard.set_key1(0);
-     Keyboard.send_now();
-    if(digitalRead(trigger_pin))
+    if(!digitalRead(trigger_pin))
     {
       num_of_presses++;
-      Keyboard.print("Sequence- " + num_of_presses);
-      Keyboard.set_key1(KEY_ENTER);
-      Keyboard.send_now();
-      Keyboard.set_key1(0);
-      Keyboard.send_now();
-      delay(1000);
-    }
-    else
-    {
       delay(1000);
     }
   }
@@ -182,11 +180,35 @@ void setup(void)
     {
       triggered = true; //stop execution of payload more than once
       //Execute main sequence below
-      Keyboard.print("triggered");
-      Keyboard.set_key1(KEY_ENTER);
-      Keyboard.send_now();
-      Keyboard.set_key1(0);
-      Keyboard.send_now();
+      
+//      //Simple testing if program is being triggered
+//      Keyboard.print("triggered");
+//      Keyboard.set_key1(KEY_ENTER);
+//      Keyboard.send_now();
+//      Keyboard.set_key1(0);
+//      Keyboard.send_now();
+      
+      //Get executables off storage / Access them
+      //Exploring possibilities of whether to type them from internal storage
+      //or just copy them from sd storage. Typing them out will provide better compatibility
+      //but the device might not have enough storage.
+      
+      
+      //Get Administrative Priveleges
+      //using this exploit (http://www.exploit-db.com/exploits/25912/) to get system prompt.
+      //Above exploit only works with 32 bit systems. So I will have to explore alternatives for 64 bit
+      //privilege escalation on Windows.
+      
+      
+      //Launch Memory Imager
+      
+      
+      //Locate storage for memory image and place it there
+      
+      
+      //Clean up activities. Not sure what but just a reminder
+      
+      
     }
   }
 }
