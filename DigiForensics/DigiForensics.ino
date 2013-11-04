@@ -159,6 +159,26 @@ bool trigger(void)
   }
 }
 
+//Open command prompt
+void open_command_prompt()
+{
+  //Opens start menu
+  Keyboard.set_modifier(MODIFIERKEY_LEFT_GUI);
+  Keyboard.send_now();
+  Keyboard.set_modifier(0);
+  Keyboard.send_now();
+  delay(1500);
+  
+  //Open cmd.exe with search field
+  Keyboard.print("cmd.exe");
+  delay(200);
+  Keyboard.set_key1(KEY_ENTER);
+  Keyboard.send_now();
+  Keyboard.set_key1(0);
+  Keyboard.send_now();  
+}
+
+
 //Main sequence
 //Only runs through once
 void setup(void)
@@ -188,10 +208,17 @@ void setup(void)
 //      Keyboard.set_key1(0);
 //      Keyboard.send_now();
       
+      //Minimizes all windows to provide a fresh start
+      reset_windows_desktop(200);
+      
+      //Opens command prompt
+      open_command_prompt();
+      
       //Get executables off storage / Access them
       //Exploring possibilities of whether to type them from internal storage
       //or just copy them from sd storage. Typing them out will provide better compatibility
       //but the device might not have enough storage.
+      
       
       
       //Get Administrative Priveleges
