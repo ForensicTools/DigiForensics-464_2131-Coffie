@@ -9,6 +9,9 @@
 
 #include <usb_private.h>
 
+//Storage "VolumeSerialNumber"
+const String STORAGE_SERIAL = "02B4C4D4";
+
 //Trigger Pin
 const int trigger_pin = 23;
 
@@ -175,9 +178,39 @@ void open_command_prompt()
   Keyboard.set_key1(KEY_ENTER);
   Keyboard.send_now();
   Keyboard.set_key1(0);
-  Keyboard.send_now();  
+  Keyboard.send_now();
+  delay(2000);  
 }
 
+//Find drive letter with given volume name
+//returns drive letter as a string
+void change_to_storage_directory(String volume_serial)
+{
+  // Command that need to be passed:
+  // FOR /F %D IN ('wmic logicaldisk where "VolumeSerialNumber='02B4C4D4'" get deviceid') do %D
+  // Not exactly the most graceful way of doing it but it does work
+  Keyboard.println("FOR /F %D IN (\'wmic logicaldisk where \"VolumeSerialNumber=\'" + volume_serial + "\'\" get deviceid\') do %D");
+}
+
+//Escalates privileges to system on Windows 32-bit
+void escalate_privileges()
+{
+  Keyboard.println("Windows-32-Priv-Exec.exe cmd");
+  
+  //Must wait a good amount of time because the amount of time required can vary.
+  //By default I have set the delay to 1 minute. This can be decreased with trial and error.
+  delay(60000);
+}
+
+//Images memory and calculates hashes of the image
+//This image is stored on the storage device
+//Creates a file called "Memory_Image" which is the memory image (who would've known?)
+//It also creates a file called "Memory_Image_Hash" which contains the output of the memory
+//imager(possible errors) as well as a MD5, SHA-1, SHA-256, and SHA-512 hash.
+void image_memory()
+{
+  Keyboard.println("wmr.exe -H MD5 -H SHA-1 -H SHA-256 -H SHA-512 Memory_Image > Memory_Image_Hash.txt 2>&1");
+}
 
 //Main sequence
 //Only runs through once
@@ -218,20 +251,20 @@ void setup(void)
       //Exploring possibilities of whether to type them from internal storage
       //or just copy them from sd storage. Typing them out will provide better compatibility
       //but the device might not have enough storage.
+      //Below I decided to just access the binaries on the sd card
+      change_to_storage_directory(STORAGE_SERIAL);
+      delay(1000);  //prevents first character from being cut off
       
-      
+      //Keyboard.println("dir");  //For testing purposes
       
       //Get Administrative Priveleges
       //using this exploit (http://www.exploit-db.com/exploits/25912/) to get system prompt.
       //Above exploit only works with 32 bit systems. So I will have to explore alternatives for 64 bit
       //privilege escalation on Windows.
-      
+      escalate_privileges();
       
       //Launch Memory Imager
-      
-      
-      //Locate storage for memory image and place it there
-      
+      image_memory();
       
       //Clean up activities. Not sure what but just a reminder
       
